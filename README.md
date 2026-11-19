@@ -139,17 +139,31 @@ FigureVault는 피규어 수집가가 보유·예약·관심 상품을 한곳에
 ## 6. 시스템 구성
 
 ```mermaid
-flowchart LR
-    user([사용자]) --> web["Web SPA<br/>React · TypeScript"]
-    web -->|REST API| api["API 서버<br/>FastAPI"]
-    api --> db[("PostgreSQL")]
-    api --> adapters["소스 어댑터"]
-    worker["수집 워커<br/>스케줄러 · 수집 작업"] --> db
+flowchart TB
+    user([사용자]) --> web
+
+    subgraph system["FigureVault"]
+        web["Web SPA<br/>React · TypeScript"]
+        api["API 서버<br/>FastAPI"]
+        worker["수집 워커<br/>스케줄러 · 수집 작업"]
+        adapters["소스 어댑터"]
+        db[("PostgreSQL")]
+    end
+
+    subgraph external["외부 API"]
+        optional["MFC<br/>AmiAmi"]
+        shops["Yahoo! 쇼핑<br/>라쿠텐 이치바"]
+        fx["환율"]
+    end
+
+    web -->|REST API| api
+    api --> db
+    api --> adapters
+    worker --> db
     worker --> adapters
-    worker --> fx["환율 API"]
-    adapters --> yahoo["Yahoo! 쇼핑 API"]
-    adapters --> rakuten["라쿠텐 이치바 API"]
-    adapters -.->|보류| optional["MFC · AmiAmi"]
+    worker --> fx
+    adapters -.->|보류| optional
+    adapters --> shops
 ```
 
 | 구성 요소 | 책임 |
